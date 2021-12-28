@@ -1,4 +1,4 @@
-package Cliente;
+package Utils;
 
 import java.io.*;
 import java.net.Socket;
@@ -6,13 +6,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Connection implements AutoCloseable{
 
-    private Socket socket;
+    private final Socket socket;
 
-    private ReentrantLock lockRead = new ReentrantLock();
-    private ReentrantLock lockWrite = new ReentrantLock();
+    private final ReentrantLock lockRead = new ReentrantLock();
+    private final ReentrantLock lockWrite = new ReentrantLock();
 
-    private DataOutputStream out;
-    private DataInputStream in;
+    private final DataOutputStream out;
+    private final DataInputStream in;
 
 
     public static class Frame{
@@ -34,8 +34,9 @@ public class Connection implements AutoCloseable{
         send(frame.tag,frame.data);
     }
     public void send(int tag, byte[] data) throws IOException{
+
+        this.lockWrite.lock();
         try{
-            this.lockWrite.lock();
             this.out.writeInt(4 + data.length);
             this.out.writeInt(tag);
             this.out.write(data);
@@ -45,8 +46,9 @@ public class Connection implements AutoCloseable{
         }
     }
     public Frame receive() throws IOException{
+
+        this.lockRead.lock();
         try{
-            this.lockRead.lock();
             int size = this.in.readInt();
             byte[] data = new byte[size - 4];
             int tag = this.in.readInt();

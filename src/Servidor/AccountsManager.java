@@ -1,17 +1,17 @@
-package Cliente;
+package Servidor;
 
-import Utils.UserNaoExisteException;
+import Utils.IAccountsManager;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class AccountManager {
+public class AccountsManager implements IAccountsManager {
 
-    private Map<String,Account> accounts;
+    private Map<String, Account> accounts;
     private ReentrantLock lock = new ReentrantLock();
 
-    public AccountManager(){
+    public AccountsManager(){
         this.accounts = new HashMap<>();
     }
 
@@ -24,16 +24,23 @@ public class AccountManager {
         }
     }
 
-    public boolean login(String user, String pass) throws UserNaoExisteException{
+    public int login(String user, String pass) {
         this.lock.lock();
         try{
             Account acc= this.accounts.get(user);
             if (acc == null)
-                throw new UserNaoExisteException();
+                return NOT_REGISTED;
 
-            return acc.getPassword().equals(pass);
+            if (user.equals("admin") && pass.equals("admin"))
+                return ADMINISTRATOR_ACCOUNT;
+
+            if (acc.getPassword().equals(pass)) {
+                return NORMAL_ACCOUNT;
+            }
         }finally {
             this.lock.unlock();
         }
+
+        return INVALID_CREDENTIALS;
     }
 }
