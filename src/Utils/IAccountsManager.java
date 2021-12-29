@@ -9,5 +9,5 @@ public interface IAccountsManager {
     int ADMINISTRATOR_ACCOUNT = 2;
 
     void createAccount(String username, String password);
-    int login(String user, String pass);
+    int login(String username, String password);
 }
