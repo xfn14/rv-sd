@@ -2,6 +2,7 @@ package Utils;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Connection implements AutoCloseable{
@@ -33,6 +34,12 @@ public class Connection implements AutoCloseable{
     public void send (Frame frame) throws IOException{
         send(frame.tag,frame.data);
     }
+
+    public void send(int tag, ByteArrayOutputStream byteArray) throws IOException{
+        this.send(tag, byteArray.toByteArray());
+        byteArray.reset();
+    }
+
     public void send(int tag, byte[] data) throws IOException{
 
         this.lockWrite.lock();

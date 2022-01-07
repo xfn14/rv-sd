@@ -10,4 +10,5 @@ public interface IAccountsManager {
 
     void createAccount(String username, String password);
     int login(String username, String password);
+    boolean isAdmin(String username);
 }

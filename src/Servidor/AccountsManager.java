@@ -5,42 +5,50 @@ import Utils.IAccountsManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AccountsManager implements IAccountsManager {
 
-    private Map<String, Account> accounts;
-    private ReentrantLock lock = new ReentrantLock();
+    private final Map<String, Account> accounts;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public AccountsManager(){
+    public AccountsManager() {
         this.accounts = new HashMap<>();
+        this.accounts.put("admin", new Account("admin", "admin"));
     }
 
-    public void createAccount(String username, String password){
-        this.lock.lock();
+    public void createAccount(String username, String password) {
+        this.lock.writeLock().lock();
         try {
             this.accounts.put(username, new Account(username, password));
-        }finally {
-            this.lock.unlock();
+        } finally {
+            this.lock.writeLock().unlock();
         }
     }
 
     public int login(String user, String pass) {
-        this.lock.lock();
-        try{
-            Account acc= this.accounts.get(user);
+        this.lock.readLock().lock();
+        try {
+            Account acc = this.accounts.get(user);
+            System.out.println("AMServer" + user + "-" + pass);
+
             if (acc == null)
                 return NOT_REGISTED;
 
-            if (user.equals("admin") && pass.equals("admin"))
+            if (isAdmin(user) && pass.equals("admin"))
                 return ADMINISTRATOR_ACCOUNT;
 
             if (acc.getPassword().equals(pass)) {
                 return NORMAL_ACCOUNT;
             }
-        }finally {
-            this.lock.unlock();
+        } finally {
+            this.lock.readLock().unlock();
         }
 
         return INVALID_CREDENTIALS;
+    }
+
+    public boolean isAdmin(String username) {
+        return username.equals("admin");
     }
 }

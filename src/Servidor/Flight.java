@@ -1,42 +1,37 @@
 package Servidor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class Flight {
     private final String origin;
     private final String destination;
     private final int capacity;
+    public static final int MAXDAYS = 60;
+    private final List<DailyBooking> bookings;
 
     public Flight(String origin, String destination, int capacity) {
         this.origin = origin;
         this.destination = destination;
         this.capacity = capacity;
-    }
-
-    public String getOrigin() {
-        return origin;
+        this.bookings = new ArrayList<>(MAXDAYS);
+        for(int i = 0; i < MAXDAYS; ++i) {
+            this.bookings.add(new DailyBooking(i, capacity));
+        }
     }
 
     public String getDestination() {
         return destination;
     }
 
-    public int getCapacity() {
-        return capacity;
+    public String getOrigin() {
+        return origin;
     }
 
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (!(o instanceof Flight)) {
-            return false;
-        }
-
-
-        Flight flight = (Flight) o;
-
-        return flight.getOrigin().equals(origin)
-                && flight.getDestination().equals(destination)
-                && flight.getCapacity() == capacity;
+    public DailyBooking getDailyBooking(int day){
+        return this.bookings.get(day);
     }
+
+
 }
