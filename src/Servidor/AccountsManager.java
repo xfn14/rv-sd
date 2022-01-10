@@ -4,7 +4,6 @@ import Utils.IAccountsManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AccountsManager implements IAccountsManager {

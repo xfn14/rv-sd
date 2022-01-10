@@ -34,6 +34,7 @@ public class StubAccountManager implements IAccountsManager {
         }
 
     }
+
     public int login(String username, String password) {
 
         try {
@@ -46,12 +47,12 @@ public class StubAccountManager implements IAccountsManager {
 
             Connection.Frame frame = connection.receive();
 
-            assert(frame.tag == 1);
+            assert (frame.tag == 1);
 
             DataInputStream in = new DataInputStream(new ByteArrayInputStream(frame.data));
 
             int status = in.readInt();
-            if(status == ADMINISTRATOR_ACCOUNT){
+            if (status == ADMINISTRATOR_ACCOUNT) {
                 this.isAdmin = true;
             }
             return status;
@@ -63,7 +64,7 @@ public class StubAccountManager implements IAccountsManager {
         return IAccountsManager.INVALID_CREDENTIALS;
     }
 
-    public boolean isAdmin(String username){
+    public boolean isAdmin(String username) {
         return isAdmin;
     }
 
