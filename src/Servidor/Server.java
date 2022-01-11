@@ -3,7 +3,8 @@ package Servidor;
 
 import Utils.Connection;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -39,7 +40,6 @@ public class Server {
                 new Thread(worker).start();
 
         }
-
         socket.close();
     }
 

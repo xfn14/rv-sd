@@ -1,15 +1,12 @@
 package UI;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class Menu {
-
     public interface Handler {
         void execute();
     }
@@ -18,18 +15,18 @@ public class Menu {
         boolean validate();
     }
 
-    private static BufferedReader is = new BufferedReader(new InputStreamReader(System.in));
+    private static final BufferedReader is = new BufferedReader(new InputStreamReader(System.in));
 
-    private String titulo;
-    private List<String> opcoes;
-    private List<PreCondition> disponivel;
-    private List<Handler> handlers;
+    private final String titulo;
+    private final List<String> opcoes;
+    private final List<PreCondition> disponivel;
+    private final List<Handler> handlers;
 
     public Menu(String titulo, List<String> opcoes) {
         this.titulo = titulo;
-        this.opcoes = new ArrayList(opcoes);
-        this.disponivel = new ArrayList();
-        this.handlers = new ArrayList();
+        this.opcoes = new ArrayList<>(opcoes);
+        this.disponivel = new ArrayList<>();
+        this.handlers = new ArrayList<>();
         this.opcoes.forEach(s -> {
             this.disponivel.add(() -> true);
             this.handlers.add(() -> System.out.println("\nATENÇÃO: Opção não implementada!"));
@@ -50,8 +47,8 @@ public class Menu {
 
     public void runOnce() {
         int op;
-        show();
-        op = readOption();
+        this.show();
+        op = this.readOption();
         if (op > 0 && !this.disponivel.get(op - 1).validate()) {
             System.out.println("Opção indisponível!");
         } else if (op > 0) {
@@ -62,8 +59,8 @@ public class Menu {
     public void run() {
         int op;
         do {
-            show();
-            op = readOption();
+            this.show();
+            op = this.readOption();
             if (op > 0 && !this.disponivel.get(op - 1).validate()) {
                 System.out.println("Opção indisponível! Tente novamente.");
             } else if (op > 0) {
@@ -72,11 +69,9 @@ public class Menu {
         } while (op != 0);
     }
 
-
     public void setPreCondition(int i, PreCondition b) {
         this.disponivel.set(i - 1, b);
     }
-
 
     public void setHandler(int i, Handler h) {
         this.handlers.set(i - 1, h);
@@ -97,7 +92,7 @@ public class Menu {
 
         System.out.print("Opção: ");
         try {
-            String line = is.readLine();
+            String line = this.is.readLine();
             op = Integer.parseInt(line);
         } catch (Exception e) { // Não foi inscrito um int
             op = -1;

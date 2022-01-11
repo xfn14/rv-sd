@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AccountsManager implements IAccountsManager {
-
     private final Map<String, Account> accounts;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -37,13 +36,11 @@ public class AccountsManager implements IAccountsManager {
             if (isAdmin(user) && pass.equals("admin"))
                 return ADMINISTRATOR_ACCOUNT;
 
-            if (acc.getPassword().equals(pass)) {
+            if (acc.getPassword().equals(pass))
                 return NORMAL_ACCOUNT;
-            }
         } finally {
             this.lock.readLock().unlock();
         }
-
         return INVALID_CREDENTIALS;
     }
 

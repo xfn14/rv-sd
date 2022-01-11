@@ -20,7 +20,7 @@ public class DailyBooking {
     }
 
     public boolean checkAvailabity(){
-        return ocupation < capacity;
+        return this.ocupation < this.capacity;
     }
 
     public void removeBooking() {
@@ -28,6 +28,6 @@ public class DailyBooking {
     }
 
     public int getDay() {
-        return day;
+        return this.day;
     }
 }

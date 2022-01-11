@@ -14,17 +14,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Client {
-    private IAccountsManager accountsManager;
-    private IFlightsManager flightsManager;
-    private BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+    private final IAccountsManager accountsManager;
+    private final IFlightsManager flightsManager;
+    private final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
     private String username;
-
-    public Client() throws IOException {
-        Socket soc = new Socket("localhost", 12345);
-        Connection connection = new Connection(soc);
-
-        Client client = new Client(connection);
-    }
 
     public Client(Connection c) {
         this.accountsManager = new StubAccountManager(c);
@@ -66,16 +59,13 @@ public class Client {
         admin.setHandler(1, this::insertFlight);
         admin.setHandler(2, this::cancelDay);
         admin.run();
-
     }
 
     public void cancelDay() {
         try {
             System.out.println("Introduza o dia que pretende fechar : ");
-            int day = Integer.parseInt(stdin.readLine());
-
+            int day = Integer.parseInt(this.stdin.readLine());
             this.flightsManager.cancelDay(this.username, day);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,19 +74,15 @@ public class Client {
     public void insertFlight() {
         try {
             System.out.println("Introduza a origem : ");
-            String origin = stdin.readLine();
+            String origin = this.stdin.readLine();
             System.out.println("Introduza o destino : ");
-            String destination = stdin.readLine();
+            String destination = this.stdin.readLine();
             System.out.println("Introduza a capacidade máxima : ");
-            int max = Integer.parseInt(stdin.readLine());
+            int max = Integer.parseInt(this.stdin.readLine());
 
             boolean status = this.flightsManager.insertFlight(this.username, origin, destination, max);
-
-            if (!status) {
-                System.out.println("Erro ! Voo já existente!");
-            } else {
-                System.out.println("Voo inserido com sucesso!");
-            }
+            if (status) System.out.println("Voo inserido com sucesso!");
+            else System.out.println("Erro ! Voo já existente!");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,22 +91,17 @@ public class Client {
     public void bookFlight() {
         try {
             System.out.println("Introduza os voos (separados por ->) : ");
-            String journeyU = stdin.readLine();
+            String journeyU = this.stdin.readLine();
             List<String> journey = Arrays.stream(journeyU.split("->")).toList();
             System.out.println(journey);
             System.out.println("Introduza o dia inicial : ");
-            int begin = Integer.parseInt(stdin.readLine());
+            int begin = Integer.parseInt(this.stdin.readLine());
             System.out.println("Introduza o dia final : ");
-            int end = Integer.parseInt(stdin.readLine());
+            int end = Integer.parseInt(this.stdin.readLine());
 
             String code = this.flightsManager.bookFlight(this.username, journey, begin, end);
-
-            if (code.equals("")) {
-                System.out.println("Erro a reservar voo!");
-            } else {
-                System.out.println("Código de reserva : " + code);
-            }
-
+            if (code.equals("")) System.out.println("Erro a reservar voo!");
+            else System.out.println("Código de reserva : " + code);
         } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
         }
@@ -129,16 +110,11 @@ public class Client {
     public void cancelFlight() {
         try {
             System.out.println("Introduza o código do voo : ");
-            String code = stdin.readLine();
+            String code = this.stdin.readLine();
 
             boolean status = this.flightsManager.cancelBooking(this.username, code);
-
-            if (!status) {
-                System.out.println("Erro no cancelamento!");
-            } else {
-                System.out.println("Cancelamento feito com sucesso !!");
-            }
-
+            if (status) System.out.println("Cancelamento feito com sucesso !!");
+            else System.out.println("Erro no cancelamento!");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -146,21 +122,19 @@ public class Client {
 
     public void getFlights() {
         List<Tuple<String, String>> flights = this.flightsManager.getFlights();
-
         System.out.println("\t\t****** Lista de voos disponíveis ******");
-        for (Tuple<String, String> tup : flights) {
+        for (Tuple<String, String> tup : flights)
             System.out.println("Origem -> " + tup.getX() + "  Destino -> " + tup.getY());
-        }
     }
 
     public void registerAccount() {
         try {
             System.out.println("Introduza o username : ");
-            String username = stdin.readLine();
+            String username = this.stdin.readLine();
             System.out.println("Introduza a password : ");
-            String password = stdin.readLine();
+            String password = this.stdin.readLine();
 
-            accountsManager.createAccount(username, password);
+            this.accountsManager.createAccount(username, password);
             this.username = username;
 
             this.showMenuReservations();
@@ -173,12 +147,11 @@ public class Client {
     public void login() {
         try {
             System.out.println("Introduza o username : ");
-            String username = stdin.readLine();
+            String username = this.stdin.readLine();
             System.out.println("Introduza a password : ");
-            String password = stdin.readLine();
+            String password = this.stdin.readLine();
 
             int status = this.accountsManager.login(username, password);
-
             switch (status) {
                 case IAccountsManager.NOT_REGISTED -> System.out.println("User não registado");
                 case IAccountsManager.INVALID_CREDENTIALS -> System.out.println("Credenciais erradas");
@@ -186,7 +159,6 @@ public class Client {
                     System.out.println("Login como normal sucedido");
                     this.username = username;
                     this.showMenuReservations();
-
                 }
                 case IAccountsManager.ADMINISTRATOR_ACCOUNT -> {
                     System.out.println("Login como administrador sucedido");

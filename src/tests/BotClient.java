@@ -12,15 +12,17 @@ import java.net.Socket;
 import java.util.List;
 
 public class BotClient {
-    private IAccountsManager accountsManager;
-    private IFlightsManager flightsManager;
+    private final Socket socket;
+    private final Connection connection;
+    private final IAccountsManager accountsManager;
+    private final IFlightsManager flightsManager;
     private String username;
 
     public BotClient(String username) throws IOException {
-        Socket soc = new Socket("localhost", 12345);
-        Connection connection = new Connection(soc);
-        this.accountsManager = new StubAccountManager(connection);
-        this.flightsManager = new StubFlightsManager(connection);
+        this.socket = new Socket("localhost", 12345);
+        this.connection = new Connection(this.socket);
+        this.accountsManager = new StubAccountManager(this.connection);
+        this.flightsManager = new StubFlightsManager(this.connection);
 
         if (username.equals("admin")) {
             this.login(username, username);
@@ -55,5 +57,10 @@ public class BotClient {
 
     public int login(String username, String password) {
         return this.accountsManager.login(username, password);
+    }
+
+    public void close() throws IOException {
+        this.connection.close();
+        this.socket.close();
     }
 }

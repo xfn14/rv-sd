@@ -10,11 +10,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 public class FlightsManager implements IFlightsManager {
+    private static int REFERENCE_NUMBER = 0;
     private final Map<String, Map<String, Flight>> flights;
     private final Map<String, Tuple<List<DailyBooking>, String>> codes;
     private final List<Boolean> availability;
-    private static int REFERENCE_NUMBER = 0;
-
     ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     ReentrantLock codesLock = new ReentrantLock();
 
@@ -41,45 +40,38 @@ public class FlightsManager implements IFlightsManager {
         try {
             Flight flight = new Flight(origin, destination, maxCapacity);
 
-            Map<String, Flight> originFlights = flights.computeIfAbsent(origin, k -> new HashMap<>());
+            Map<String, Flight> originFlights = this.flights.computeIfAbsent(origin, k -> new HashMap<>());
 
-            if(originFlights.get(destination) != null)
+            if (originFlights.get(destination) != null)
                 return false;
 
             originFlights.put(destination, flight);
 
             return true;
-
         } finally {
             this.readWriteLock.writeLock().unlock();
         }
-
     }
 
-
     public String bookFlight(String username, List<String> journeys, int begin, int end) {
-
         boolean booked = false;
         int day = begin;
         String code = "";
 
-        if(journeys.size() < 2 || begin < 0 || begin > end || end >= Flight.MAXDAYS)
+        if (journeys.size() < 2 || begin < 0 || begin > end || end >= Flight.MAXDAYS)
             return code;
 
         List<DailyBooking> bookings = null;
         this.readWriteLock.readLock().lock();
-
         try {
             Set<Flight> flights = new TreeSet<>(Comparator.comparing(Flight::getOrigin)
                     .thenComparing(Flight::getDestination));
 
             for (int i = 0; i < journeys.size() - 1; ++i) {
                 Map<String, Flight> map = this.flights.get(journeys.get(i));
-                if(map == null)
-                    return code;
+                if (map == null) return code;
                 Flight f = map.get(journeys.get(i + 1));
-                if(f == null)
-                    return code;
+                if (f == null) return code;
                 flights.add(f);
             }
 
@@ -152,10 +144,8 @@ public class FlightsManager implements IFlightsManager {
         this.readWriteLock.writeLock().lock();
         try {
             this.availability.set(day, false);
-        }finally {
+        } finally {
             this.readWriteLock.writeLock().unlock();
         }
     }
-
-
 }

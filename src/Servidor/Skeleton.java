@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Skeleton {
-
-    final private IAccountsManager accountsManager;
-    final private IFlightsManager flightsManager;
+    private final IAccountsManager accountsManager;
+    private final IFlightsManager flightsManager;
 
     public Skeleton() {
         this.accountsManager = new AccountsManager();
@@ -20,7 +19,6 @@ public class Skeleton {
     }
 
     public void handle(Connection c) throws IOException {
-
         Connection.Frame frame = c.receive();
         int tag = frame.tag;
         DataInputStream buffer = new DataInputStream(new ByteArrayInputStream(frame.data));
@@ -33,19 +31,19 @@ public class Skeleton {
                 String username = buffer.readUTF();
                 String password = buffer.readUTF();
 
-                accountsManager.createAccount(username, password);
+                this.accountsManager.createAccount(username, password);
                 System.out.println("Conta criada com o user : " + username + " e password " + password);
-
             }
+
             case 1 -> {
                 String username = buffer.readUTF();
                 String password = buffer.readUTF();
 
                 System.out.println("Sk" + username + "-" + password);
 
-                out.writeInt(accountsManager.login(username, password));
-
+                out.writeInt(this.accountsManager.login(username, password));
             }
+
             case 2 -> {
                 String username = buffer.readUTF();
                 int size = buffer.readInt();
@@ -57,11 +55,11 @@ public class Skeleton {
                 int begin = buffer.readInt();
                 int end = buffer.readInt();
 
-                String code = flightsManager.bookFlight(username, journey, begin, end);
+                String code = this.flightsManager.bookFlight(username, journey, begin, end);
 
                 out.writeUTF(code);
-
             }
+
             case 3 -> {
                 String username = buffer.readUTF();
                 String code = buffer.readUTF();
@@ -85,6 +83,7 @@ public class Skeleton {
 
                 out.writeBoolean(status);
             }
+
             case 5 -> {
                 String username = buffer.readUTF();
                 int day = buffer.readInt();
@@ -98,6 +97,7 @@ public class Skeleton {
 
                 out.writeBoolean(status);
             }
+
             case 6 -> {
                 List<Tuple<String, String>> list = this.flightsManager.getFlights();
 
@@ -106,13 +106,11 @@ public class Skeleton {
                     out.writeUTF(tup.getX());
                     out.writeUTF(tup.getY());
                 }
-
             }
         }
         if (out.size() > 0) {
             out.flush();
             c.send(tag, bufOut.toByteArray());
         }
-
     }
 }
