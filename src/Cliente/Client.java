@@ -137,6 +137,7 @@ public class Client {
 
     public void getTempLogsBooksFlights() {
 
+        int i = 0;
         for (Tuple<Thread, ThreadedBookFlight> tup: this.booksFlights) {
             Thread thread = tup.getX();
             ThreadedBookFlight threadedBookFlight = tup.getY();
@@ -155,6 +156,7 @@ public class Client {
             else {
                 try {
                     thread.join();
+                    this.booksFlights.set(i, new Tuple<>(null, threadedBookFlight));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -162,6 +164,7 @@ public class Client {
             }
 
             System.out.println("-------------------------------");
+            ++i;
 
 
         }
