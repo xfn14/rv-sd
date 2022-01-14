@@ -38,6 +38,7 @@ public class Client {
         mainMenu.setHandler(1, client::registerAccount);
         mainMenu.setHandler(2, client::login);
         mainMenu.run();
+        conn.close();
     }
 
     public void showMenuReservations() {
@@ -67,8 +68,8 @@ public class Client {
         admin.run();
     }
 
-    public void getScales(){
-        try{
+    public void getScales() {
+        try {
             System.out.println("Introduza a origem : ");
             String origin = this.stdin.readLine();
             System.out.println("Introduza o destino : ");
@@ -81,7 +82,7 @@ public class Client {
             for (Tuple<String, String> tup : list)
                 System.out.println("Primeira Escala -> " + tup.getX() + "  Segunda Escala -> " + tup.getY());
 
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -138,7 +139,7 @@ public class Client {
     public void getTempLogsBooksFlights() {
 
         int i = 0;
-        for (Tuple<Thread, ThreadedBookFlight> tup: this.booksFlights) {
+        for (Tuple<Thread, ThreadedBookFlight> tup : this.booksFlights) {
             Thread thread = tup.getX();
             ThreadedBookFlight threadedBookFlight = tup.getY();
 
@@ -147,10 +148,10 @@ public class Client {
                     "\nJourney: " + threadedBookFlight.journey +
                     "\nBegin: " + threadedBookFlight.begin +
                     "\nEnd: " + threadedBookFlight.end
-                    );
+            );
 
             if (thread == null)
-                System.out.println("Code: " + threadedBookFlight.code);
+                System.out.println("Code: " + (!threadedBookFlight.code.isEmpty() ? threadedBookFlight.code : "--ERROR--"));
             else if (thread.isAlive())
                 System.out.println("Code: --Processing--");
             else {
@@ -160,7 +161,7 @@ public class Client {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                System.out.println("Code: " + threadedBookFlight.code);
+                System.out.println("Code: " + (!threadedBookFlight.code.isEmpty() ? threadedBookFlight.code : "--ERROR--"));
             }
 
             System.out.println("-------------------------------");
@@ -185,7 +186,7 @@ public class Client {
             Thread thread = new Thread(threadedBookFlight);
             thread.start();
 
-            this.booksFlights.add(new Tuple<Thread, ThreadedBookFlight>(thread, threadedBookFlight));
+            this.booksFlights.add(new Tuple<>(thread, threadedBookFlight));
         } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
         }
@@ -218,10 +219,14 @@ public class Client {
             System.out.println("Introduza a password : ");
             String password = this.stdin.readLine();
 
-            this.accountsManager.createAccount(username, password);
-            this.username = username;
+            boolean status = this.accountsManager.createAccount(username, password);
+            if (status) {
+                this.username = username;
 
-            this.showMenuReservations();
+                this.showMenuReservations();
+            } else {
+                System.out.println("Conta já existente !!");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
