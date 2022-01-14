@@ -20,18 +20,17 @@ public class Skeleton {
 
     public void handle(Connection c) throws IOException {
         Connection.Frame frame = c.receive();
-        int tag = frame.tag;
         DataInputStream buffer = new DataInputStream(new ByteArrayInputStream(frame.data));
 
         ByteArrayOutputStream bufOut = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(bufOut);
 
-        switch (tag) {
+        switch (frame.tag) {
             case 0 -> {
                 String username = buffer.readUTF();
                 String password = buffer.readUTF();
 
-                this.accountsManager.createAccount(username, password);
+                out.writeBoolean(this.accountsManager.createAccount(username, password));
                 System.out.println("Conta criada com o user : " + username + " e password " + password);
             }
 
@@ -107,10 +106,22 @@ public class Skeleton {
                     out.writeUTF(tup.getY());
                 }
             }
+
+            case 7 -> {
+                String origin = buffer.readUTF();
+                String destination = buffer.readUTF();
+                List<Tuple<String, String>> list = this.flightsManager.getScales(origin, destination);
+
+                out.writeInt(list.size());
+                for(Tuple<String, String> tuple : list){
+                    out.writeUTF(tuple.getX());
+                    out.writeUTF(tuple.getY());
+                }
+            }
         }
         if (out.size() > 0) {
             out.flush();
-            c.send(tag, bufOut.toByteArray());
+            c.rawSend(frame.threadId, frame.tag, bufOut.toByteArray());
         }
     }
 }

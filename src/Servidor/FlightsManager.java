@@ -23,6 +23,41 @@ public class FlightsManager implements IFlightsManager {
         this.availability = new ArrayList<>(Collections.nCopies(Flight.MAXDAYS, true));
     }
 
+    public List<Tuple<String, String>> getScales(String origin, String destination) {
+        this.readWriteLock.readLock().lock();
+        List<Tuple<String, String>> list = new ArrayList<>();
+        try {
+            Map<String, Flight> firstMap = this.flights.get(origin);
+
+            if (firstMap == null) return list;
+
+            for (Map.Entry<String, Flight> entry : firstMap.entrySet()) {
+                if (entry.getKey().equals(destination))
+                    list.add(new Tuple<>("", ""));
+                else {
+
+                    Map<String, Flight> sndMap = this.flights.get(entry.getKey());
+
+                    if (sndMap != null) {
+                        for (Map.Entry<String, Flight> sndEntry : sndMap.entrySet()) {
+                            if (sndEntry.getKey().equals(destination))
+                                list.add(new Tuple<>(entry.getKey(), ""));
+                            else {
+                                Map<String, Flight> thrMap = this.flights.get(sndEntry.getKey());
+                                if (thrMap != null && thrMap.containsKey(destination))
+                                    list.add(new Tuple<>(entry.getKey(),sndEntry.getKey()));
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            this.readWriteLock.readLock().unlock();
+        }
+        return list;
+
+    }
+
     public List<Tuple<String, String>> getFlights() {
         this.readWriteLock.readLock().lock();
         try {

@@ -1,6 +1,6 @@
 package Cliente;
 
-import Utils.Connection;
+import Utils.Demultiplexer;
 import Utils.IFlightsManager;
 import Utils.Tuple;
 
@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StubFlightsManager implements IFlightsManager {
-    private final Connection connection;
+    private final Demultiplexer demultiplexer;
     private final ByteArrayOutputStream buffer;
     private final DataOutputStream out;
 
-    public StubFlightsManager(Connection c) {
-        this.connection = c;
+    public StubFlightsManager(Demultiplexer demultiplexer) {
+        this.demultiplexer = demultiplexer;
         this.buffer = new ByteArrayOutputStream();
         this.out = new DataOutputStream(this.buffer);
     }
@@ -28,13 +28,11 @@ public class StubFlightsManager implements IFlightsManager {
             this.out.writeInt(maxCapacity);
 
             this.out.flush();
-            this.connection.send(4, this.buffer);
+            this.demultiplexer.send(4, this.buffer);
 
-            Connection.Frame frame = this.connection.receive();
+            byte[] data = this.demultiplexer.receive();
 
-            assert (frame.tag == 4);
-
-            DataInputStream in = new DataInputStream(new ByteArrayInputStream(frame.data));
+            DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
             status = in.readBoolean();
 
         } catch (IOException e) {
@@ -54,13 +52,10 @@ public class StubFlightsManager implements IFlightsManager {
             this.out.writeInt(end);
 
             this.out.flush();
-            this.connection.send(2, this.buffer);
+            this.demultiplexer.send(2, this.buffer);
+            byte[] data = this.demultiplexer.receive();
 
-            Connection.Frame frame = this.connection.receive();
-
-            assert (frame.tag == 2);
-
-            DataInputStream in = new DataInputStream(new ByteArrayInputStream(frame.data));
+            DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
             code = in.readUTF();
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,13 +71,11 @@ public class StubFlightsManager implements IFlightsManager {
             System.out.println("Stub " + code);
 
             this.out.flush();
-            this.connection.send(3, this.buffer);
+            this.demultiplexer.send(3, this.buffer);
 
-            Connection.Frame frame = this.connection.receive();
+            byte[] data = this.demultiplexer.receive();
 
-            assert (frame.tag == 3);
-
-            DataInputStream in = new DataInputStream(new ByteArrayInputStream(frame.data));
+            DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
             status = in.readBoolean();
         } catch (IOException e) {
             e.printStackTrace();
@@ -96,7 +89,7 @@ public class StubFlightsManager implements IFlightsManager {
             this.out.writeInt(day);
 
             this.out.flush();
-            this.connection.send(5, this.buffer);
+            this.demultiplexer.send(5, this.buffer);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,11 +98,10 @@ public class StubFlightsManager implements IFlightsManager {
     public List<Tuple<String, String>> getFlights() {
         List<Tuple<String, String>> list = null;
         try {
-            this.connection.send(6, this.buffer);
-            Connection.Frame frame = this.connection.receive();
+            this.demultiplexer.send(6, this.buffer);
+            byte[] data = this.demultiplexer.receive();
 
-            assert (frame.tag == 6);
-            DataInputStream in = new DataInputStream(new ByteArrayInputStream(frame.data));
+            DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
             int size = in.readInt();
             list = new ArrayList<>(size);
@@ -117,6 +109,27 @@ public class StubFlightsManager implements IFlightsManager {
             for (int i = 0; i < size; ++i)
                 list.add(new Tuple<>(in.readUTF(), in.readUTF()));
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Tuple<String, String>> getScales(String origin, String destination){
+        List<Tuple<String, String>> list = new ArrayList<>();
+
+        try{
+            this.out.writeUTF(origin);
+            this.out.writeUTF(destination);
+            this.demultiplexer.send(7, this.buffer);
+            byte[] data = this.demultiplexer.receive();
+
+            DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
+
+            int size = in.readInt();
+            for(int i = 0; i < size; ++i){
+                list.add(new Tuple<>(in.readUTF(), in.readUTF()));
+            }
+        }catch (IOException e){
             e.printStackTrace();
         }
         return list;

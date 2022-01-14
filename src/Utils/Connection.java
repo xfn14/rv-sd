@@ -29,8 +29,13 @@ public class Connection implements AutoCloseable {
     }
 
     public void send(int tag, byte[] data) throws IOException {
+        this.rawSend(Thread.currentThread().getId(), tag, data);
+    }
+
+    public void rawSend(long threadId, int tag, byte[] data) throws IOException {
         this.lockWrite.lock();
         try {
+            this.out.writeLong(threadId);
             this.out.writeInt(4 + data.length);
             this.out.writeInt(tag);
             this.out.write(data);
@@ -43,12 +48,13 @@ public class Connection implements AutoCloseable {
     public Frame receive() throws IOException {
         this.lockRead.lock();
         try {
+            long threadId = this.in.readLong();
             int size = this.in.readInt();
             byte[] data = new byte[size - 4];
             int tag = this.in.readInt();
             this.in.readFully(data);
 
-            return new Frame(tag, data);
+            return new Frame(threadId, tag, data);
         } finally {
             this.lockRead.unlock();
         }
@@ -59,10 +65,12 @@ public class Connection implements AutoCloseable {
     }
 
     public static class Frame {
+        public final long threadId;
         public final int tag;
         public final byte[] data;
 
-        public Frame(int tag, byte[] data) {
+        public Frame(long threadId, int tag, byte[] data) {
+            this.threadId = threadId;
             this.tag = tag;
             this.data = data;
         }

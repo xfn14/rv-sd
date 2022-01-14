@@ -15,13 +15,18 @@ public class AccountsManager implements IAccountsManager {
         this.accounts.put("admin", new Account("admin", "admin"));
     }
 
-    public void createAccount(String username, String password) {
+    public boolean createAccount(String username, String password) {
         this.lock.writeLock().lock();
         try {
-            this.accounts.put(username, new Account(username, password));
+            if (!this.accounts.containsKey(username)) {
+                this.accounts.put(username, new Account(username, password));
+                return true;
+            }
         } finally {
             this.lock.writeLock().unlock();
         }
+
+        return false;
     }
 
     public int login(String user, String pass) {

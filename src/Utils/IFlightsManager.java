@@ -12,4 +12,6 @@ public interface IFlightsManager {
     boolean cancelBooking(String username, String code);
 
     void cancelDay(String username, int day);
+
+    List<Tuple<String, String>> getScales(String origin, String destination);
 }

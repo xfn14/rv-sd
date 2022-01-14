@@ -7,7 +7,7 @@ public interface IAccountsManager {
     int NORMAL_ACCOUNT = 1;
     int ADMINISTRATOR_ACCOUNT = 2;
 
-    void createAccount(String username, String password);
+    boolean createAccount(String username, String password);
 
     int login(String username, String password);
 

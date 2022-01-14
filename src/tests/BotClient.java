@@ -2,10 +2,7 @@ package tests;
 
 import Cliente.StubAccountManager;
 import Cliente.StubFlightsManager;
-import Utils.Connection;
-import Utils.IAccountsManager;
-import Utils.IFlightsManager;
-import Utils.Tuple;
+import Utils.*;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -13,16 +10,16 @@ import java.util.List;
 
 public class BotClient {
     private final Socket socket;
-    private final Connection connection;
+    private final Demultiplexer demultiplexer;
     private final IAccountsManager accountsManager;
     private final IFlightsManager flightsManager;
     private String username;
 
     public BotClient(String username) throws IOException {
         this.socket = new Socket("localhost", 12345);
-        this.connection = new Connection(this.socket);
-        this.accountsManager = new StubAccountManager(this.connection);
-        this.flightsManager = new StubFlightsManager(this.connection);
+        this.demultiplexer = new Demultiplexer(new Connection(this.socket));
+        this.accountsManager = new StubAccountManager(this.demultiplexer);
+        this.flightsManager = new StubFlightsManager(this.demultiplexer);
 
         if (username.equals("admin")) {
             this.login(username, username);
@@ -60,7 +57,7 @@ public class BotClient {
     }
 
     public void close() throws IOException {
-        this.connection.close();
+        this.demultiplexer.close();
         this.socket.close();
     }
 }
